@@ -41,10 +41,17 @@
 		notes.forEach(function(note) {
 			addNoteToDOM(note);
 		});
+		
+		// First time
+		console.log(window.localStorage.getItem('firstTime'));
+		if (window.localStorage.getItem('firstTime') === null) {
+			window.localStorage.setItem('firstTime', 'false');
+			toggleHelp();
+		}
 	};
 	
 	function loadNotes() {
-		if (window.localStorage.notes === undefined) return [];
+		if (window.localStorage.getItem('notes') === null) return [];
 		var notes = JSON.parse(window.localStorage.getItem('notes'));
 		return notes;
 	};
@@ -119,18 +126,36 @@
 	
     // clearPlaceholder ----------------------------------
     function clearPlaceholder(e) {
-        // stop flashing when try to submit empty note
-        if (!(e.ctrlKey && e.code === 'Enter')) e.target.classList = '';
+        e.target.classList = '';
     };
     
-    NoteBody.addEventListener('keypress', clearPlaceholder);
-    NoteTitle.addEventListener('keypress', clearPlaceholder);
+    NoteBody.addEventListener('keypress', function(e) {
+		if (!(e.ctrlKey && e.code === 'Enter')) clearPlaceholder(e);
+	});
+    NoteTitle.addEventListener('keypress', function(e) {
+		if (!(e.ctrlKey && e.code === 'Enter')) clearPlaceholder(e);
+	});
+	
+	// addPlaceholder -----------------------------------
+	function addPlaceholder(e) {
+		if (e.target === NoteTitle) NoteTitle.classList = 'title-placeholder';
+		if (e.target === NoteBody) NoteBody.classList = 'body-placeholder';
+	};
+
+    NoteBody.addEventListener('keyup', function(e) {
+		if (e.target.innerHTML === '') addPlaceholder(e);
+	});
+    NoteTitle.addEventListener('keyup', function(e) {
+		if (e.target.innerHTML === '') addPlaceholder(e);
+	});
     
     // handleInputKeystrokes -----------------------------
     
     function handleInputKeystrokes(e) {
         // Handle submit
         if (e.key === 'Enter' && e.ctrlKey) createNote();
+		// Handle Paste
+		if (e.key === 'v' && e.ctrlKey && e.target.innerHTML !== '') clearPlaceholder(e);
     };
 
     NoteBody.addEventListener('keyup', handleInputKeystrokes);
@@ -138,7 +163,7 @@
 	
 	// Deleting Notes -------------------------------------
 	function deleteNote(e) {
-		
+		e.stopImmediatePropagation();
 		var Note = e.target.offsetParent;
 
 		// Grid
@@ -287,6 +312,7 @@
 		var Cell = getFirstOpenCell();
 		if (Cell === null) {
 			addGridRow();
+			Cell = getFirstOpenCell();
 		};
 		
 		Cell.dataset.full = "true";
@@ -380,10 +406,10 @@
 		Note.setAttribute('draggable', 'true');
 		Note.setAttribute('data-position', note.position);
 		
-		Note.addEventListener('click', showNoteUpdater);  // on window object
+		Note.addEventListener('click', showNoteUpdater);
 		Note.addEventListener('mouseover', showFullNote); // on window object
         Note.addEventListener('mouseout', function(e) {
-			hideFullNote.bind(this)();
+			hideFullNote.apply(this);
 			dragFlag = 0;
 			clickFlag = 0;
 		});
@@ -558,8 +584,13 @@
     };
 	
 	function uploadPhoto(e) {
+		e.stopImmediatePropagation();
 		var note = e.target.offsetParent;
-		note.querySelector('.photo-input').click();
+		var photoInput = note.querySelector('.photo-input');
+		photoInput.addEventListener('click', function(e) {
+			e.stopImmediatePropagation();
+		})
+		photoInput.click();
 		
 	};
 	

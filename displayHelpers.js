@@ -31,11 +31,19 @@
 	};
 	
 	HelpButton.addEventListener('click', toggleHelp);
+	Help.addEventListener('click', function(e) {
+		if (e.target === this) toggleHelp();
+	})
+	root.toggleHelp = toggleHelp;
 	
 	// MenuButton ----------------------------------------
 	
 	function toggleMenu() {
-		(Menu.style.display === 'block') ? Menu.style.display = 'none' : Menu.style.display = 'block';
+		if (Menu.style.left === '0px') { 
+			Menu.style.left = '-312px';
+		} else {
+			Menu.style.left = '0px';
+		};
 	};
 	
 	MenuButton.addEventListener('click', toggleMenu);
@@ -181,7 +189,7 @@
 	
 	NoteUpdater.querySelector('.done').addEventListener('click', hideNoteUpdater);
 	
-	NoteUpdaterWrapper.addEventListener('click', function(e) {
+	NoteUpdaterWrapper.addEventListener('mousedown', function(e) {
 		if (e.target === NoteUpdaterWrapper) hideNoteUpdater();
 	});	
 	
